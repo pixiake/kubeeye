@@ -87,7 +87,15 @@ func HtmlOut(resultName string) (error, map[string]interface{}) {
 		ruleNumber = append(ruleNumber, []interface{}{key, val, issues})
 	}
 
+	if os.Getenv("DISABLE_SYSTEM_COMPONENT") == "true" {
+		delete(resultCollection, constant.Component)
+	}
+
 	data := map[string]interface{}{"title": results.Annotations[constant.AnnotationStartTime], "overview": ruleNumber, "details": resultCollection}
+
+	if os.Getenv("DISABLE_OVERVIEW") == "true" {
+		data = map[string]interface{}{"title": results.Annotations[constant.AnnotationStartTime], "details": resultCollection}
+	}
 
 	return nil, data
 }
