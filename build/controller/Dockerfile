@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM  golang:1.19 as builder
+FROM  golang:1.21 as builder
 
 #ARG goproxy=https://goproxy.cn,direct
 #ENV GOPROXY=$goproxy
@@ -27,7 +27,7 @@ ENV CGO_ENABLED=0
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETPLATFORM} go build   -o /workspace/controller ./cmd/ke-manager/main.go
 
-FROM alpine:3.18 as ke-manager
+FROM alpine:3.19 as ke-manager
 
 WORKDIR /kubeeye
 

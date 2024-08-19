@@ -77,6 +77,7 @@ func GetInspectResultHtmlTemplate() (*hemltemplate.Template, error) {
 
 <div class="header">InspectReport（{{- .title -}}）</div>
 
+{{ if .overview}}
 <div class="content">
     <div style="font-size: 30px;min-width: 800px;">overview</div>
     <table border="1" cellpadding="0" cellspacing="0" class="overview">
@@ -102,6 +103,7 @@ func GetInspectResultHtmlTemplate() (*hemltemplate.Template, error) {
         </tbody>
     </table>
 </div>
+{{ end }}
 
 {{range $k,$v:= .details}}
 
