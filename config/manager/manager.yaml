@@ -59,6 +59,43 @@ spec:
             name: inspect-result
           - mountPath: /etc/localtime
             name: localtime
+      - name: kubeeye-apiserver
+        image: kubespheredev/kubeeye-apiserver:latest
+        imagePullPolicy: IfNotPresent
+        env:
+          - name: GIN_MODE
+            value: release
+          - name: DISABLE_SYSTEM_COMPONENT
+            value: "true"
+          - name: DISABLE_OVERVIEW
+            value: "true"
+        volumeMounts:
+          - mountPath: /etc/localtime
+            name: localtime
+          - mountPath: /kubeeye/data
+            readOnly: true
+            name: inspect-result
+        livenessProbe:
+          initialDelaySeconds: 15
+          timeoutSeconds: 10
+          periodSeconds: 20
+          httpGet:
+            port: 9090
+            path: /readyz
+        readinessProbe:
+          periodSeconds: 10
+          timeoutSeconds: 10
+          initialDelaySeconds: 5
+          httpGet:
+            port: 9090
+            path: /healthz
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
       volumes:
