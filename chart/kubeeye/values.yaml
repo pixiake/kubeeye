@@ -1,30 +1,15 @@
 apiserver:
-  kubeeyeApiserver:
-    env:
-      ginMode: release
-    image:
-      repository: kubespheredev/kubeeye-apiserver
-      tag: v1.0.0
-    imagePullPolicy: IfNotPresent
-    resources:
-      limits:
-        cpu: 500m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
   ports:
   - port: 9090
     protocol: TCP
     targetPort: 9090
-  replicas: 1
   type: ClusterIP
 config:
   config: |-
     job:
       autoDelTime: 30
       backLimit: 5
-      image: kubespheredev/kubeeye-job:v1.0.0
+      image: kubespheredev/kubeeye-job:v1.0.1
       imagePullPolicy: IfNotPresent
       resources:
         limits:
@@ -33,10 +18,10 @@ config:
         requests:
           cpu: 50m
           memory: 256Mi
-#      multiCluster:
-#        member1:
-#          image: kubespheredev/kubeeye-job:v1.0.0-rc.3
-#          imagePullPolicy: IfNotPresent
+      multiCluster:
+        member1:
+          image: kubespheredev/kubeeye-job:v1.0.1
+          imagePullPolicy: IfNotPresent
 controllerManager:
   kubeRbacProxy:
     args:
@@ -54,6 +39,22 @@ controllerManager:
       requests:
         cpu: 5m
         memory: 64Mi
+  kubeeyeApiserver:
+    env:
+      disableOverview: "true"
+      disableSystemComponent: "true"
+      ginMode: release
+    image:
+      repository: kubespheredev/kubeeye-apiserver
+      tag: v1.0.1
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 500m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
   manager:
     args:
     - --health-probe-bind-address=:8081
@@ -63,7 +64,7 @@ controllerManager:
       allowPrivilegeEscalation: false
     image:
       repository: kubespheredev/kubeeye-controller
-      tag: v1.0.0
+      tag: v1.0.1
     imagePullPolicy: IfNotPresent
     resources:
       limits:

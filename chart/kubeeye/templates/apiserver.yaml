@@ -7,7 +7,7 @@ metadata:
 spec:
   type: {{ .Values.apiserver.type }}
   selector:
-    app: kubeeye-apiserver
+    control-plane: kubeeye-controller-manager
   {{- include "kubeeye.selectorLabels" . | nindent 4 }}
   ports:
-	{{- .Values.apiserver.ports | toYaml | nindent 2 -}}
+	{{- .Values.apiserver.ports | toYaml | nindent 2 }}

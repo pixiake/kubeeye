@@ -11,4 +11,4 @@ spec:
     control-plane: kubeeye-controller-manager
   {{- include "kubeeye.selectorLabels" . | nindent 4 }}
   ports:
-	{{- .Values.metricsService.ports | toYaml | nindent 2 -}}
+	{{- .Values.metricsService.ports | toYaml | nindent 2 }}
