@@ -28,6 +28,8 @@ const (
 	Component      = "component"
 	CustomCommand  = "customcommand"
 	NodeInfo       = "nodeinfo"
+	NodesStatus    = "nodes status"
+	AbnormalPods   = "abnormal pods"
 )
 
 const (

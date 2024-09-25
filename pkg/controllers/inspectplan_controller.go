@@ -183,6 +183,7 @@ func (r *InspectPlanReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		}
 
 		plan.Status.NextScheduleTime = &metav1.Time{Time: schedule.Next(now)}
+		r.Status().Patch(ctx, plan, client.MergeFrom(plan))
 		if err = r.updateStatus(ctx, plan, now, taskName); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -213,10 +214,19 @@ func nextScheduledTimeDuration(sched cron.Schedule, now *metav1.Time) *time.Dura
 }
 
 func (r *InspectPlanReconciler) createInspectTask(plan *kubeeyev1alpha2.InspectPlan, ctx context.Context) (string, error) {
+
+	inspectTaskName := fmt.Sprintf("%s-%s", plan.Name, time.Now().Format("20060102-15-04"))
+
+	err := r.Client.Get(ctx, client.ObjectKey{Name: inspectTaskName}, &kubeeyev1alpha2.InspectTask{})
+	if err == nil {
+		klog.Info("InspectTask already exists. ", "InspectTask: ", inspectTaskName)
+		return inspectTaskName, nil
+	}
+
 	ownerController := true
 	inspectTask := kubeeyev1alpha2.InspectTask{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   fmt.Sprintf("%s-%s", plan.Name, time.Now().Format("20060102-15-04")),
+			Name:   inspectTaskName,
 			Labels: map[string]string{constant.LabelPlanName: plan.Name},
 			Annotations: map[string]string{constant.AnnotationInspectType: func() string {
 				if plan.Spec.Schedule == nil {
@@ -251,7 +261,7 @@ func (r *InspectPlanReconciler) createInspectTask(plan *kubeeyev1alpha2.InspectP
 		},
 	}
 
-	err := r.Client.Create(ctx, &inspectTask)
+	err = r.Client.Create(ctx, &inspectTask)
 	if err != nil {
 		return "", err
 	}

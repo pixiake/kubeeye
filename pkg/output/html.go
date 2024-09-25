@@ -6,6 +6,7 @@ import (
 	"github.com/kubesphere/kubeeye/pkg/constant"
 	"github.com/kubesphere/kubeeye/pkg/utils"
 	"io"
+	corev1 "k8s.io/api/core/v1"
 	"os"
 	"path"
 	"strings"
@@ -40,41 +41,41 @@ func HtmlOut(resultName string) (error, map[string]interface{}) {
 	var resultCollection = make(map[string][]renderNode, 5)
 
 	if results.Spec.OpaResult.ResourceResults != nil {
-		list := getOpaList(results.Spec.OpaResult.ResourceResults)
+		list := GetOpaList(results.Spec.OpaResult.ResourceResults)
 		resultCollection[constant.Opa] = list
 	}
 	if results.Spec.PrometheusResult != nil {
-		prometheus := getPrometheus(results.Spec.PrometheusResult)
+		prometheus := GetPrometheus(results.Spec.PrometheusResult)
 		resultCollection[constant.Prometheus] = prometheus
 	}
 
 	if results.Spec.FileChangeResult != nil {
-		resultCollection[constant.FileChange] = getFileChange(results.Spec.FileChangeResult)
+		resultCollection[constant.FileChange] = GetFileChange(results.Spec.FileChangeResult)
 	}
 
 	if results.Spec.SysctlResult != nil {
-		resultCollection[constant.Sysctl] = getSysctl(results.Spec.SysctlResult)
+		resultCollection[constant.Sysctl] = GetSysctl(results.Spec.SysctlResult)
 
 	}
 	if results.Spec.SystemdResult != nil {
-		resultCollection[constant.Systemd] = getSystemd(results.Spec.SystemdResult)
+		resultCollection[constant.Systemd] = GetSystemd(results.Spec.SystemdResult)
 
 	}
 	if results.Spec.FileFilterResult != nil {
-		resultCollection[constant.FileFilter] = getFileFilter(results.Spec.FileFilterResult)
+		resultCollection[constant.FileFilter] = GetFileFilter(results.Spec.FileFilterResult)
 
 	}
 
 	if results.Spec.CommandResult != nil {
-		resultCollection[constant.CustomCommand] = getCommand(results.Spec.CommandResult)
+		resultCollection[constant.CustomCommand] = GetCommand(results.Spec.CommandResult)
 
 	}
 	if results.Spec.NodeInfo != nil {
-		resultCollection[constant.NodeInfo] = getNodeInfo(results.Spec.NodeInfo)
+		resultCollection[constant.NodeInfo] = GetNodeInfo(results.Spec.NodeInfo)
 	}
 
 	if results.Spec.ServiceConnectResult != nil {
-		component := getServiceConnect(results.Spec.ServiceConnectResult)
+		component := GetServiceConnect(results.Spec.ServiceConnectResult)
 		resultCollection[constant.ServiceConnect] = component
 	}
 
@@ -100,7 +101,7 @@ func HtmlOut(resultName string) (error, map[string]interface{}) {
 	return nil, data
 }
 
-func getOpaList(result []v1alpha2.ResourceResult) (opaList []renderNode) {
+func GetOpaList(result []v1alpha2.ResourceResult) (opaList []renderNode) {
 	opaList = append(opaList, renderNode{Header: true, Children: []renderNode{
 		{Text: "Name"}, {Text: "Kind"}, {Text: "NameSpace"}, {Text: "Message"}, {Text: "Reason"}, {Text: "Level"},
 	}})
@@ -122,7 +123,7 @@ func getOpaList(result []v1alpha2.ResourceResult) (opaList []renderNode) {
 	return opaList
 }
 
-func getPrometheus(pro []v1alpha2.PrometheusResult) []renderNode {
+func GetPrometheus(pro []v1alpha2.PrometheusResult) []renderNode {
 	var prometheus []renderNode
 	for _, p := range pro {
 		value := renderNode{}
@@ -132,7 +133,7 @@ func getPrometheus(pro []v1alpha2.PrometheusResult) []renderNode {
 	return prometheus
 }
 
-func getFileChange(fileChange []v1alpha2.FileChangeResultItem) []renderNode {
+func GetFileChange(fileChange []v1alpha2.FileChangeResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true,
 		Children: []renderNode{
@@ -163,7 +164,7 @@ func getFileChange(fileChange []v1alpha2.FileChangeResultItem) []renderNode {
 	return villeinage
 }
 
-func getFileFilter(fileResult []v1alpha2.FileChangeResultItem) []renderNode {
+func GetFileFilter(fileResult []v1alpha2.FileChangeResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true, Children: []renderNode{
 		{Text: "name"},
@@ -184,7 +185,7 @@ func getFileFilter(fileResult []v1alpha2.FileChangeResultItem) []renderNode {
 
 	return villeinage
 }
-func getServiceConnect(component []v1alpha2.ServiceConnectResultItem) []renderNode {
+func GetServiceConnect(component []v1alpha2.ServiceConnectResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true, Children: []renderNode{
 		{Text: "name"},
@@ -203,7 +204,7 @@ func getServiceConnect(component []v1alpha2.ServiceConnectResultItem) []renderNo
 	return villeinage
 }
 
-func getSysctl(sysctlResult []v1alpha2.NodeMetricsResultItem) []renderNode {
+func GetSysctl(sysctlResult []v1alpha2.NodeMetricsResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true,
 		Children: []renderNode{
@@ -230,7 +231,7 @@ func getSysctl(sysctlResult []v1alpha2.NodeMetricsResultItem) []renderNode {
 	return villeinage
 }
 
-func getNodeInfo(nodeInfo []v1alpha2.NodeInfoResultItem) []renderNode {
+func GetNodeInfo(nodeInfo []v1alpha2.NodeInfoResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true,
 		Children: []renderNode{
@@ -261,7 +262,7 @@ func getNodeInfo(nodeInfo []v1alpha2.NodeInfoResultItem) []renderNode {
 	return villeinage
 }
 
-func getSystemd(systemdResult []v1alpha2.NodeMetricsResultItem) []renderNode {
+func GetSystemd(systemdResult []v1alpha2.NodeMetricsResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true,
 		Children: []renderNode{
@@ -287,7 +288,7 @@ func getSystemd(systemdResult []v1alpha2.NodeMetricsResultItem) []renderNode {
 
 	return villeinage
 }
-func getCommand(commandResult []v1alpha2.CommandResultItem) []renderNode {
+func GetCommand(commandResult []v1alpha2.CommandResultItem) []renderNode {
 	var villeinage []renderNode
 	header := renderNode{Header: true,
 		Children: []renderNode{
@@ -312,4 +313,112 @@ func getCommand(commandResult []v1alpha2.CommandResultItem) []renderNode {
 	}
 
 	return villeinage
+}
+
+func GetNodesStatus(result *corev1.NodeList) (nodeList []renderNode) {
+	nodeList = append(nodeList, renderNode{Header: true, Children: []renderNode{
+		{Text: "Name"}, {Text: "Address"}, {Text: "Version"}, {Text: "Status"},
+	}})
+	for _, resourceResult := range result.Items {
+		address := ""
+		status := ""
+		for _, addr := range resourceResult.Status.Addresses {
+			if addr.Type == corev1.NodeInternalIP {
+				address = addr.Address
+			}
+		}
+		for _, condition := range resourceResult.Status.Conditions {
+			if condition.Type == corev1.NodeReady && condition.Status == corev1.ConditionTrue {
+				status = "Ready"
+			} else {
+				status = "NotReady"
+			}
+		}
+		items := []renderNode{
+			{Text: resourceResult.Name},
+			{Text: address},
+			{Text: resourceResult.Status.NodeInfo.KubeletVersion},
+			{Text: status},
+		}
+
+		nodeList = append(nodeList, renderNode{Children: items})
+	}
+
+	return nodeList
+}
+
+func GetAbnormalPods(result *corev1.PodList) (podList []renderNode) {
+	podList = append(podList, renderNode{Header: true, Children: []renderNode{
+		{Text: "Name"}, {Text: "Namespace"}, {Text: "Phase"}, {Text: "Reason"}, {Text: "Message"},
+	}})
+	for _, resourceResult := range result.Items {
+		if resourceResult.Status.Phase != corev1.PodRunning && resourceResult.Status.Phase != corev1.PodSucceeded {
+			reason := ""
+			message := ""
+			if len(resourceResult.Status.InitContainerStatuses) > 0 {
+				for _, intContainer := range resourceResult.Status.InitContainerStatuses {
+					if intContainer.State.Waiting != nil {
+						if reason != "" {
+							reason = reason + ", " + intContainer.State.Waiting.Reason
+						} else {
+							reason = intContainer.State.Waiting.Reason
+						}
+						if message != "" {
+							message = message + "\n" + intContainer.State.Waiting.Message
+						} else {
+							message = intContainer.State.Waiting.Message
+						}
+					} else if intContainer.State.Terminated != nil {
+						if reason != "" {
+							reason = reason + ", " + intContainer.State.Terminated.Reason
+						} else {
+							reason = intContainer.State.Terminated.Reason
+						}
+						if message != "" {
+							message = message + "\n" + intContainer.State.Terminated.Message
+						} else {
+							message = intContainer.State.Terminated.Message
+						}
+					}
+				}
+			}
+			if len(resourceResult.Status.ContainerStatuses) > 0 {
+				for _, container := range resourceResult.Status.ContainerStatuses {
+					if container.State.Waiting != nil {
+						if reason != "" {
+							reason = reason + ", " + container.State.Waiting.Reason
+						} else {
+							reason = container.State.Waiting.Reason
+						}
+						if message != "" {
+							message = message + "\n" + container.State.Waiting.Message
+						} else {
+							message = container.State.Waiting.Message
+						}
+					} else if container.State.Terminated != nil {
+						if reason != "" {
+							reason = reason + ", " + container.State.Terminated.Reason
+						} else {
+							reason = container.State.Terminated.Reason
+						}
+						if message != "" {
+							message = message + "\n" + container.State.Terminated.Message
+						} else {
+							message = container.State.Terminated.Message
+						}
+					}
+				}
+			}
+			items := []renderNode{
+				{Text: resourceResult.Name},
+				{Text: resourceResult.Namespace},
+				{Text: string(resourceResult.Status.Phase)},
+				{Text: reason},
+				{Text: message},
+			}
+			podList = append(podList, renderNode{Children: items})
+		}
+	}
+
+	return podList
 }

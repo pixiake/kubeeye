@@ -32,6 +32,7 @@ func RegisterRouter(ctx context.Context, r *gin.Engine, clients *kube.Kubernetes
 
 		v1alpha1.GET("/inspectresults", result.ListInspectResult)
 		v1alpha1.GET("/inspectresults/:name", result.GetInspectResult)
+		v1alpha1.GET("/inspectresults/:name/download", result.DownloadInspectResult)
 
 		v1alpha1.GET("/inspecttasks", task.ListInspectTask)
 		v1alpha1.GET("/inspecttasks/:name", task.GetInspectTask)
