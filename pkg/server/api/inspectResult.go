@@ -121,6 +121,13 @@ func (i *InspectResult) GetInspectResult(gin *gin.Context) {
 			return
 		}
 		gin.HTML(http.StatusOK, template.InspectResultTemplate, m)
+	case "json":
+		data, err := i.GetFileResultData(name)
+		if err != nil {
+			gin.JSON(http.StatusInternalServerError, NewErrors(err.Error(), "InspectResult"))
+			return
+		}
+		gin.JSON(http.StatusOK, data)
 	case "customized":
 		data, err := i.GetFileResultData(name)
 		if err != nil {
@@ -153,6 +160,16 @@ func (i *InspectResult) GetInspectResult(gin *gin.Context) {
 		gin.JSON(http.StatusOK, result)
 	}
 
+}
+
+func (i *InspectResult) DownloadInspectResult(c *gin.Context) {
+	name := c.Param("name")
+	filePath := path.Join(constant.ResultPathPrefix, name)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Disposition", "attachment; filename="+path.Base(filePath))
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	c.File(path.Join(constant.ResultPathPrefix, name+".xlsx"))
 }
 
 func (i *InspectResult) compare(a, b map[string]interface{}, orderBy string) bool {

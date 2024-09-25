@@ -93,6 +93,10 @@ func (r *InspectResultReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		if err != nil {
 			klog.Error(err, "failed to delete file")
 		}
+		err = os.Remove(fmt.Sprintf("%s.xlsx", path.Join(constant.ResultPathPrefix, result.Name)))
+		if err != nil {
+			klog.Error(err, "failed to delete xlsx file")
+		}
 		err = r.Client.Update(ctx, result)
 		if err != nil {
 			klog.Error("Failed to inspect plan add finalizers. ", err)

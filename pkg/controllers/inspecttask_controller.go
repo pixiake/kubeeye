@@ -22,6 +22,7 @@ import (
 	"fmt"
 	kubeeyeInformers "github.com/kubesphere/kubeeye/clients/informers/externalversions/kubeeye"
 	"github.com/kubesphere/kubeeye/pkg/constant"
+	"github.com/kubesphere/kubeeye/pkg/output"
 	"github.com/kubesphere/kubeeye/pkg/rules"
 	"github.com/kubesphere/kubeeye/pkg/template"
 	"github.com/kubesphere/kubeeye/pkg/utils"
@@ -258,9 +259,21 @@ func (r *InspectTaskReconciler) GenerateResult(task *kubeeyev1alpha2.InspectTask
 		}
 	}
 
+	file, err = os.Open(fmt.Sprintf("%s.xlsx", path.Join(constant.ResultPathPrefix, resultName)))
+	if err == nil {
+		defer file.Close()
+		err = os.Remove(fmt.Sprintf("%s.xlsx", path.Join(constant.ResultPathPrefix, resultName)))
+		if err != nil {
+			klog.Error("failed to delete result xlsx file")
+		}
+	}
+
 	return kubeeyev1alpha2.InspectResult{
 		ObjectMeta: metav1.ObjectMeta{Name: resultName,
-			Labels: map[string]string{constant.LabelTaskName: task.Name},
+			Labels: map[string]string{
+				constant.LabelTaskName: task.Name,
+				constant.LabelPlanName: task.Labels[constant.LabelPlanName],
+			},
 			Annotations: map[string]string{
 				constant.AnnotationStartTime:     task.Status.StartTimestamp.Format("2006-01-02 15:04:05"),
 				constant.AnnotationEndTime:       task.Status.EndTimestamp.Format("2006-01-02 15:04:05"),
@@ -440,7 +453,19 @@ func (r *InspectTaskReconciler) getInspectResultData(ctx context.Context, client
 		}
 	}
 
-	err = saveResultFile(resultData)
+	// get all nodes
+	nodes, err := clients.ClientSet.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	// Get all pods
+	pods, err := clients.ClientSet.CoreV1().Pods("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	err = saveResultFile(resultData, nodes, pods)
 	if err != nil {
 		return err
 	}
@@ -453,7 +478,8 @@ func (r *InspectTaskReconciler) getInspectResultData(ctx context.Context, client
 	return nil
 }
 
-func saveResultFile(resultData *kubeeyev1alpha2.InspectResult) error {
+func saveResultFile(resultData *kubeeyev1alpha2.InspectResult, nodes *corev1.NodeList, pods *corev1.PodList) error {
+	// json
 	file, err := os.OpenFile(path.Join(constant.ResultPathPrefix, resultData.Name), os.O_CREATE|os.O_WRONLY, 0775)
 	if err != nil {
 		klog.Error(err, "open file error")
@@ -468,6 +494,11 @@ func saveResultFile(resultData *kubeeyev1alpha2.InspectResult) error {
 	if err != nil {
 		klog.Error(err, "write file error")
 		return err
+	}
+	// execl
+	err = output.GenerateExcel(resultData, nodes, pods)
+	if err != nil {
+		klog.Error(err, "generate excel error")
 	}
 	return nil
 }
